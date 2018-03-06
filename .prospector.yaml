@@ -1,0 +1,10 @@
+autodetect: false
+
+ignore-paths:
+  - dist
+  - docs
+  - rt_sandbox
+
+pylint:
+  disable:
+    - keyword-arg-before-vararg
