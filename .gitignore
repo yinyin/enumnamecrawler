@@ -35,8 +35,37 @@ Session.vim
 .directory
 .nfs*
 tags
-.pytest_cache
-rt_sandbox
+
+__pycache__
+*.py[cod]
+*$py.class
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg
+*.egg-info/
+.installed.cfg
+MANIFEST
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
 
 *.d
 *.slo
@@ -60,4 +89,4 @@ rt_sandbox
 *.test
 
 .env
-enumnamecrawler.egg*
+rt_sandbox
