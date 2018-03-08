@@ -43,6 +43,14 @@ class EnumElement(object):
 			))
 		return
 
+	def __eq__(self, other):
+		if (self.name == other.name) and (((self.value is None) and (other.value is None)) or (self.value == other.value)):
+			return True
+		return False
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
+
 
 CrawlerCallbacks = namedtuple("CrawlerCallbacks", (
 		"outputpath_check_callable",

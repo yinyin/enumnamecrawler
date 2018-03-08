@@ -25,6 +25,27 @@ def enumelem_banana_1():
 	return EnumElement("banana", "f2", 52, 2)
 
 
+@pytest.fixture
+def enumelem_banana_na():
+	return EnumElement("banana", "f2a", 52)
+
+
+@pytest.fixture
+def enumelem_banana_nb():
+	return EnumElement("banana", "f2b", 53)
+
+
+@pytest.fixture
+def enumelem_banana_3a():
+	return EnumElement("banana", "f2x1", 61, 3)
+
+
+@pytest.fixture
+def enumelem_banana_3b():
+	return EnumElement("banana", "f2x2", 61, 3)
+
+
+@pytest.fixture
 def test_EnumElement_code_location(enumelem_apple_n):
 	assert enumelem_apple_n.code_location == "f1:31"
 
@@ -61,3 +82,18 @@ def test_EnumElement_combine_diffname(enumelem_apple_n, enumelem_banana_1):
 	with pytest.raises(ValueError) as excinfo:
 		enumelem_apple_n.combine(enumelem_banana_1)
 	assert "different name" in str(excinfo.value)
+
+
+def test_EnumElement_compare(enumelem_banana_1, enumelem_banana_na, enumelem_banana_nb, enumelem_banana_3a, enumelem_banana_3b):
+	assert enumelem_banana_1 != enumelem_banana_na
+	assert not (enumelem_banana_1 == enumelem_banana_na)
+	assert enumelem_banana_na != enumelem_banana_1
+	assert not (enumelem_banana_na == enumelem_banana_1)
+	assert enumelem_banana_1 != enumelem_banana_3a
+	assert not (enumelem_banana_1 == enumelem_banana_3a)
+	assert enumelem_banana_3a != enumelem_banana_1
+	assert not (enumelem_banana_3a == enumelem_banana_1)
+	assert enumelem_banana_na == enumelem_banana_nb
+	assert enumelem_banana_nb == enumelem_banana_na
+	assert enumelem_banana_3a == enumelem_banana_3b
+	assert enumelem_banana_3b == enumelem_banana_3a
