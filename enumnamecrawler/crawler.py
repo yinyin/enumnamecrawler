@@ -52,7 +52,7 @@ class CrawlInstance(object):
 					for elem in self.enumelement_discover_callable(fp, p_rel):
 						aux = code_container.setdefault(elem.name, elem)
 						aux.combine(elem)
-			dirs[:] = [d for d in dirs if self.codefilepath_filter_callable(root, d)]
+			dirs[:] = [d for d in dirs if self.codefilepath_filter_callable(os.path.abspath(os.path.join(root, d)))]
 
 	def collect_enumelement(self):
 		# type: () -> Iterator[EnumElement]
