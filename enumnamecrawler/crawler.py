@@ -67,9 +67,9 @@ class CrawlInstance(object):
 	def run(self):
 		self._reset()
 		self.crawl_enumelement()
-		errcodes = self.collect_enumelement()
-		self.enumelement_assign_callable(errcodes)
-		self.codemap_write_callable(errcodes)
+		enumelements = self.collect_enumelement()
+		self.enumelement_assign_callable(enumelements)
+		self.codemap_write_callable(enumelements)
 
 
 def run(basefolder_path, callbacks):
