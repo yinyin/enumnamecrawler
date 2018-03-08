@@ -51,6 +51,14 @@ class EnumElement(object):
 	def __ne__(self, other):
 		return not self.__eq__(other)
 
+	def __repr__(self):
+		return "EnumElement(name=%r, code_file=%r, code_line=%r, value=%r)" % (
+				self.name,
+				self.code_file,
+				self.code_line,
+				self.value,
+		)
+
 
 CrawlerCallbacks = namedtuple("CrawlerCallbacks", (
 		"outputpath_check_callable",

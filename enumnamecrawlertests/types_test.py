@@ -97,3 +97,8 @@ def test_EnumElement_compare(enumelem_banana_1, enumelem_banana_na, enumelem_ban
 	assert enumelem_banana_nb == enumelem_banana_na
 	assert enumelem_banana_3a == enumelem_banana_3b
 	assert enumelem_banana_3b == enumelem_banana_3a
+
+
+def test_EnumElement_repr(enumelem_apple_n, enumelem_apple_1):
+	assert repr(enumelem_apple_n) == "EnumElement(name='apple', code_file='f1', code_line=31, value=None)"
+	assert repr(enumelem_apple_1) == "EnumElement(name='apple', code_file='f1_x', code_line=51, value=1)"
