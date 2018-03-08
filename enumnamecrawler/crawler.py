@@ -57,10 +57,12 @@ class CrawlInstance(object):
 	def collect_enumelement(self):
 		# type: () -> Iterator[EnumElement]
 		result = list(self._discovered_enumelements.itervalues())
-		for k, elem in self._existed_enumelements.itervalues():
-			if k in self._discovered_enumelements:
+		for k, elem in self._existed_enumelements.iteritems():
+			if k not in self._discovered_enumelements:
 				continue
-			result.append(elem)
+			aux = self._discovered_enumelements[k]
+			if aux.value is None:
+				aux.combine(elem)
 		sorted(result, key=lambda x: x.name)
 		return result
 
