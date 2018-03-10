@@ -6,7 +6,7 @@ class Incrementer(object):
 		# type: (int, int) -> None
 		super(Incrementer, self).__init__(*args, **kwds)
 		if step == 0:
-			raise ValueError("step value must > 0: %r" % (step, ))
+			raise ValueError("step value must != 0: %r" % (step, ))
 		self.base = base
 		self.step = step
 

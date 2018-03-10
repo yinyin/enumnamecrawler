@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import pytest
+
 from enumnamecrawler.types import EnumElement
 from enumnamecrawler.valueassigner.increment import Incrementer
+
+
+def test_Incrementer_construct():
+	with pytest.raises(ValueError) as excinfo:
+		assigner = Incrementer(1, 0)  # noqa
+	assert "step value must != 0" in str(excinfo.value)
 
 
 # pylint: disable=protected-access
