@@ -90,3 +90,6 @@ coverage.xml
 
 .env
 rt_sandbox
+enumnamecrawlertests/lang/c/testinput/errorcode.c
+enumnamecrawlertests/lang/c/testinput/errorcode.h
+
