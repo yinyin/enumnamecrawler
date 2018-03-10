@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import os
+import copy
 import tempfile
 import shutil
 import logging
 import pytest
 
+from enumnamecrawler.crawler import run as crawler_run
 from enumnamecrawler.crawler import CrawlInstance
 from enumnamecrawler.types import CrawlerCallbacks, EnumElement
 
@@ -63,6 +65,13 @@ _EXPECT_COLLECTED = [
 		EnumElement("enum3", "input.7.txt", 70),
 ]
 
+_EXPECT_ASSIGNED = [
+		EnumElement("enum0", "input.8.txt", 2, 1),
+		EnumElement("enum1", "input.8.txt", 1, -5),
+		EnumElement("enum2", "output.5.txt", 2, -6),
+		EnumElement("enum3", "input.7.txt", 70, 4),
+]
+
 
 @pytest.fixture
 def work_folder(request):
@@ -80,6 +89,13 @@ def work_folder(request):
 	return basefolder
 
 
+def _enumelement_assign_callable_impl1(enumelements):
+	for enumidx, enumelem in enumerate(enumelements):
+		if enumelem.value is not None:
+			continue
+		enumelem.value = enumidx + 1
+
+
 @pytest.fixture
 def mocked_crawler_callbacks(mocker):
 	outputpath_check_callable = mocker.stub(name="outputpath_check_callable")
@@ -87,8 +103,9 @@ def mocked_crawler_callbacks(mocker):
 	codefilepath_filter_callable = mocker.stub(name="codefilepath_filter_callable")
 	codefilepath_filter_callable.side_effect = lambda p: ((p[-4:] == ".txt") or (os.path.basename(p) in ("f1", "f2", "a", "b")))
 	enumelement_discover_callable = mocker.stub(name="enumelement_discover_callable")
-	enumelement_discover_callable.side_effect = lambda fp, p: _MOCK_ENUMELEMENTS[os.path.basename(p)]
+	enumelement_discover_callable.side_effect = lambda fp, p: copy.deepcopy(_MOCK_ENUMELEMENTS[os.path.basename(p)])
 	enumelement_assign_callable = mocker.stub(name="enumelement_assign_callable")
+	enumelement_assign_callable.side_effect = _enumelement_assign_callable_impl1
 	codemap_write_callable = mocker.stub(name="codemap_write_callable")
 	return CrawlerCallbacks(outputpath_check_callable, codefilepath_filter_callable, enumelement_discover_callable, enumelement_assign_callable,
 																									codemap_write_callable)
@@ -121,3 +138,16 @@ def test_CrawlInstance_collect_enumelement(work_folder, mocked_crawler_callbacks
 	instance.crawl_enumelement()
 	enumelements = instance.collect_enumelement()
 	assert enumelements == _EXPECT_COLLECTED
+
+
+def test_CrawlInstance_run(work_folder, mocked_crawler_callbacks):
+	instance = CrawlInstance(work_folder, mocked_crawler_callbacks)
+	instance.run()
+	mocked_crawler_callbacks.enumelement_assign_callable.assert_called_once()
+	mocked_crawler_callbacks.codemap_write_callable.assert_called_with(_EXPECT_ASSIGNED)
+
+
+def test_run(work_folder, mocked_crawler_callbacks):
+	crawler_run(work_folder, mocked_crawler_callbacks)
+	mocked_crawler_callbacks.enumelement_assign_callable.assert_called_once()
+	mocked_crawler_callbacks.codemap_write_callable.assert_called_with(_EXPECT_ASSIGNED)
