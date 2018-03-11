@@ -2,6 +2,12 @@
 
 import os
 import fnmatch
+import re
+import string
+
+from enumnamecrawler.types import EnumElement
+
+_IDENTIFIER_CHARS = string.ascii_letters + string.digits + "_"
 
 
 class C_OutputCodeConfig(object):
@@ -42,7 +48,8 @@ class C_OutputCodeConfig(object):
 class C_CodeCallbacks(object):
 	def __init__(self, enumname_prefix, output_config, codefile_ignore_patterns=None, codefile_suffixes=(".c", ".cc", ".cpp", ".h", ".hpp"), *args, **kwds):
 		super(C_CodeCallbacks, self).__init__(*args, **kwds)
-		self.enumname_prefix = enumname_prefix
+		self.enumname_regex = re.compile(r"(" + re.escape(enumname_prefix) + r"_[A-Za-z0-9_]+)")
+		self.enumdef_regex = re.compile(r"#define\s+(" + re.escape(enumname_prefix) + r"_[A-Za-z0-9_]+)\s+([0-9-]+)")
 		self.output_config = output_config
 		self.codefile_ignore_patterns = codefile_ignore_patterns
 		self.codefile_suffixes = codefile_suffixes
@@ -72,8 +79,31 @@ class C_CodeCallbacks(object):
 			return True
 		return self._check_name_in_suffix(name)
 
+	def _search_valued_enum(self, codefile_relpath, line_number, l):
+		m = self.enumdef_regex.match(l)
+		if m is None:
+			return None
+		enumname = m.group(1)
+		enumvalue = int(m.group(2))
+		return EnumElement(enumname, codefile_relpath, line_number, enumvalue)
+
+	def _extract_unvalue_enum(self, codefile_relpath, line_number, l, m):
+		s = m.start(1) - 1
+		if (s >= 0) and (l[s] in _IDENTIFIER_CHARS):
+			return None
+		enumname = m.group(1)
+		return EnumElement(enumname, codefile_relpath, line_number)
+
 	def enumelement_discover(self, fp, codefile_relpath):
-		return ()
+		for line_number, l in enumerate(fp, 1):
+			aux = self._search_valued_enum(codefile_relpath, line_number, l)
+			if aux is not None:
+				yield aux
+				continue
+			for m in self.enumname_regex.finditer(l):
+				aux = self._extract_unvalue_enum(codefile_relpath, line_number, l, m)
+				if aux is not None:
+					yield aux
 
 	def codemap_write(self, enumelements):
 		pass

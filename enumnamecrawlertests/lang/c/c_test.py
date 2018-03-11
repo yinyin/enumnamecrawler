@@ -3,7 +3,20 @@
 import os
 import pytest
 
+from enumnamecrawler.types import EnumElement
 from enumnamecrawler.lang.c import C_OutputCodeConfig, C_CodeCallbacks
+
+_EXPECT_DISCOVERED_MAIC_C = [
+		EnumElement("TESTINPUT_DIVIDEND_NEGATIVE", "main.c", 7),
+		EnumElement("TESTINPUT_DIVISOR_NEGATIVE", "main.c", 10),
+		EnumElement("TESTINPUT_DIVIDE_BY_ZERO", "main.c", 13),
+]
+
+_EXPECT_DISCOVERED_ERRORCODE_H = [
+		EnumElement("TESTINPUT_DIVIDEND_NEGATIVE", "errorcode.h", 4, -1),
+		EnumElement("TESTINPUT_DIVISOR_NEGATIVE", "errorcode.h", 5, -2),
+		EnumElement("TESTINPUT_DIVIDE_BY_ZERO", "errorcode.h", 6, -3),
+]
 
 
 @pytest.fixture
@@ -84,3 +97,19 @@ def test_C_CodeCallbacks_codefilepath_filter_2(callbacks_with_unittest):
 	assert not callbacks.codefilepath_filter("/dev/proj/function.py")
 	assert not callbacks.codefilepath_filter("/dev/proj/function.o")
 	assert not callbacks.codefilepath_filter("/dev/proj/function.so")
+
+
+def test_C_CodeCallbacks_enumelement_discover_1(callbacks_with_unittest):
+	callbacks = callbacks_with_unittest
+	filepath = os.path.abspath(os.path.join(os.path.dirname(__file__), "testinput", "main.c"))
+	with open(filepath, "r") as fp:
+		discovered = list(callbacks.enumelement_discover(fp, "main.c"))
+	assert _EXPECT_DISCOVERED_MAIC_C == discovered
+
+
+def test_C_CodeCallbacks_enumelement_discover_2(callbacks_with_unittest):
+	callbacks = callbacks_with_unittest
+	filepath = os.path.abspath(os.path.join(os.path.dirname(__file__), "testinput", "gen", "errorcode.h"))
+	with open(filepath, "r") as fp:
+		discovered = list(callbacks.enumelement_discover(fp, "errorcode.h"))
+	assert _EXPECT_DISCOVERED_ERRORCODE_H == discovered
