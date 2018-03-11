@@ -63,7 +63,7 @@ class CrawlInstance(object):
 			aux = self._discovered_enumelements[k]
 			if aux.value is None:
 				aux.combine(elem)
-		sorted(result, key=lambda x: x.name)
+		result = sorted(result, key=lambda x: x.name.replace("_", "-"))
 		return result
 
 	def run(self):
