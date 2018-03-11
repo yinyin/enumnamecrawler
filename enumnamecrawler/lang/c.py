@@ -20,20 +20,30 @@ class C_OutputCodeConfig(object):
 		self._include_guard_symbol = None
 		self._stringer_func_name = None
 
+	def _header_stringer_relpath(self):
+		b = 0
+		i = 0
+		for ch, cs in zip(self.header_path, self.stringer_path):
+			if ch != cs:
+				break
+			i = i + 1
+			if ch == os.sep:
+				b = i
+		return (self.header_path[b:], self.stringer_path[b:])
+
 	@property
 	def include_path(self):
 		if self._include_path:
 			return self._include_path
-		basefolder = os.path.commonprefix((
-				self.header_path,
-				self.stringer_path,
-		))
-		aux = self.header_path[len(basefolder):]
+		aux, _aux = self._header_stringer_relpath()
 		hdrincl = []
 		incl_h, incl_t = os.path.split(aux)
 		while (incl_t is not None) and (incl_t not in (".", "include", "includes")):
 			hdrincl.append(incl_t)
-			incl_h, incl_t = os.path.split(incl_h)
+			if incl_h:
+				incl_h, incl_t = os.path.split(incl_h)
+			else:
+				break
 		return os.path.join(*reversed(hdrincl))
 
 	@include_path.setter
@@ -57,7 +67,7 @@ class C_OutputCodeConfig(object):
 		if self._stringer_func_name:
 			return self._stringer_func_name
 		aux = os.path.basename(self.header_path).lower().split(".")
-		n = aux[0]+"_string"
+		n = aux[0] + "_string"
 		return n
 
 	@stringer_func_name.setter
@@ -73,6 +83,7 @@ class C_OutputCodeConfig(object):
 
 class C_CodeCallbacks(object):
 	def __init__(self, enumname_prefix, output_config, codefile_ignore_patterns=None, codefile_suffixes=(".c", ".cc", ".cpp", ".h", ".hpp"), *args, **kwds):
+		# type: (str, C_OutputCodeConfig, Optional[Iterable[str]], Iterable[str])
 		super(C_CodeCallbacks, self).__init__(*args, **kwds)
 		self.enumname_regex = re.compile(r"(" + re.escape(enumname_prefix) + r"_[A-Za-z0-9_]+)")
 		self.enumdef_regex = re.compile(r"#define\s+(" + re.escape(enumname_prefix) + r"_[A-Za-z0-9_]+)\s+([0-9-]+)")
@@ -131,5 +142,42 @@ class C_CodeCallbacks(object):
 				if aux is not None:
 					yield aux
 
+	def _write_header(self, enumelements):
+		include_guard_symbol = self.output_config.include_guard_symbol
+		with open(self.output_config.header_path, "w") as fp:
+			fp.writelines((
+					"#ifndef " + include_guard_symbol + "\n",
+					"#define " + include_guard_symbol + " 1\n",
+					"\n",
+			))
+			for enumelem in enumelements:
+				fp.write("#define " + enumelem.name + " " + str(enumelem.value) + "\n")
+			fp.writelines((
+					"\n",
+					"char * " + self.output_config.stringer_func_name + "(int c);\n",
+					"\n",
+					"#endif\t/* " + include_guard_symbol + " */\n",
+			))
+
+	def _write_stringer(self, enumelements):
+		with open(self.output_config.stringer_path, "w") as fp:
+			fp.writelines((
+					"#include \"" + self.output_config.include_path + "\"\n",
+					"\n",
+					"char * " + self.output_config.stringer_func_name + "(int c) {\n",
+					"\tswitch(c) {\n",
+			))
+			for enumelem in enumelements:
+				fp.writelines((
+						"\tcase " + enumelem.name + ":\n",
+						"\t\treturn \"" + enumelem.name + "\";\n",
+				))
+			fp.writelines((
+					"\t}\n",
+					"\treturn \"?\";\n",
+					"}\n",
+			))
+
 	def codemap_write(self, enumelements):
-		pass
+		self._write_header(enumelements)
+		self._write_stringer(enumelements)

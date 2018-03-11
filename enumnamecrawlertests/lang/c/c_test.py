@@ -3,7 +3,9 @@
 import os
 import pytest
 
-from enumnamecrawler.types import EnumElement
+from enumnamecrawler.types import EnumElement, CrawlerCallbacks
+from enumnamecrawler.crawler import CrawlInstance
+from enumnamecrawler.valueassigner.increment import Incrementer
 from enumnamecrawler.lang.c import C_OutputCodeConfig, C_CodeCallbacks
 
 _EXPECT_DISCOVERED_MAIC_C = [
@@ -16,6 +18,31 @@ _EXPECT_DISCOVERED_ERRORCODE_H = [
 		EnumElement("TESTINPUT_DIVIDEND_NEGATIVE", "errorcode.h", 4, -1),
 		EnumElement("TESTINPUT_DIVISOR_NEGATIVE", "errorcode.h", 5, -2),
 		EnumElement("TESTINPUT_DIVIDE_BY_ZERO", "errorcode.h", 6, -3),
+]
+
+_EXPECT_HEADER = [
+		"#ifndef _ERRORCODE_H_",
+		"#define _ERRORCODE_H_ 1",
+		"#define TESTINPUT_DIVIDE_BY_ZERO -1",
+		"#define TESTINPUT_DIVIDEND_NEGATIVE -2",
+		"#define TESTINPUT_DIVISOR_NEGATIVE -3",
+		"char * errorcode_string(int c);",
+		"#endif\t/* _ERRORCODE_H_ */",
+]
+
+_EXPECT_STRINGER = [
+		"#include \"errorcode.h\"",
+		"char * errorcode_string(int c) {",
+		"switch(c) {",
+		"case TESTINPUT_DIVIDE_BY_ZERO:",
+		"return \"TESTINPUT_DIVIDE_BY_ZERO\";",
+		"case TESTINPUT_DIVIDEND_NEGATIVE:",
+		"return \"TESTINPUT_DIVIDEND_NEGATIVE\";",
+		"case TESTINPUT_DIVISOR_NEGATIVE:",
+		"return \"TESTINPUT_DIVISOR_NEGATIVE\";",
+		"}",
+		"return \"?\";",
+		"}",
 ]
 
 
@@ -58,11 +85,16 @@ def callbacks_without_unittest_ignore_gen():
 	return C_CodeCallbacks("TESTINPUT", output_config, codefile_ignore_patterns=("gen", ))
 
 
-def test_C_OutputCodeConfig_include_path():
+def test_C_OutputCodeConfig_include_path_1():
 	output_config = C_OutputCodeConfig("/home/d/project/include/proj/header.h", "/home/d/project/src/stringer.c")
 	assert output_config.include_path == "proj/header.h"
 	output_config.include_path = "abc.h"
 	assert output_config.include_path == "abc.h"
+
+
+def test_C_OutputCodeConfig_include_path_2():
+	output_config = C_OutputCodeConfig("/home/d/project/errcode.h", "/home/d/project/errcode.c")
+	assert output_config.include_path == "errcode.h"
 
 
 def test_C_OutputCodeConfig_include_guard_symbol(bogus_output_config_without_unittest):
@@ -132,3 +164,30 @@ def test_C_CodeCallbacks_enumelement_discover_2(callbacks_with_unittest):
 	with open(filepath, "r") as fp:
 		discovered = list(callbacks.enumelement_discover(fp, "errorcode.h"))
 	assert _EXPECT_DISCOVERED_ERRORCODE_H == discovered
+
+
+def load_generated_file(n):
+	p = os.path.abspath(os.path.join(os.path.dirname(__file__), "testinput", n))
+	with open(p, "r") as fp:
+		for l in fp:
+			l = l.strip()
+			if l:
+				yield l
+
+
+def test_C_CodeCallbacks_run_1(callbacks_without_unittest_ignore_gen):
+	codecallbacks = callbacks_without_unittest_ignore_gen
+	assigner = Incrementer(-1, -1)
+	callbacks = CrawlerCallbacks(
+			codecallbacks.outputpath_check,
+			codecallbacks.codefilepath_filter,
+			codecallbacks.enumelement_discover,
+			assigner,
+			codecallbacks.codemap_write,
+	)
+	basefolder = os.path.abspath(os.path.join(os.path.dirname(__file__), "testinput"))
+	os.unlink(os.path.join(basefolder, "errorcode.h"))
+	crawler = CrawlInstance(basefolder, callbacks)
+	crawler.run()
+	assert _EXPECT_HEADER == list(load_generated_file("errorcode.h"))
+	assert _EXPECT_STRINGER == list(load_generated_file("errorcode.c"))
