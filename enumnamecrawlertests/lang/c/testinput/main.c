@@ -23,5 +23,6 @@ int main(int argc, char *argv[]) {
 	} else {
 		printf("%d = 10 / 3\n", quotient);
 	}
+	/* Traps: TRAPTESTINPUT_TRAP, TRAP_TESTINPUT_TRAP, TESTINPUTTRAP */
 	return 0;
 }
