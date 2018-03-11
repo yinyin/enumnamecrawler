@@ -26,8 +26,13 @@ def bogus_callbacks_with_unittest():
 
 
 @pytest.fixture
-def bogus_callbacks_without_unittest():
-	output_config = C_OutputCodeConfig("/dev/proj/header.h", "/dev/proj/stringer.c")
+def bogus_output_config_without_unittest():
+	return C_OutputCodeConfig("/dev/proj/header.h", "/dev/proj/stringer.c")
+
+
+@pytest.fixture
+def bogus_callbacks_without_unittest(bogus_output_config_without_unittest):
+	output_config = bogus_output_config_without_unittest
 	return C_CodeCallbacks("TESTINPUT", output_config)
 
 
@@ -58,6 +63,20 @@ def test_C_OutputCodeConfig_include_path():
 	assert output_config.include_path == "proj/header.h"
 	output_config.include_path = "abc.h"
 	assert output_config.include_path == "abc.h"
+
+
+def test_C_OutputCodeConfig_include_guard_symbol(bogus_output_config_without_unittest):
+	output_config = bogus_output_config_without_unittest
+	assert output_config.include_guard_symbol == "_HEADER_H_"
+	output_config.include_guard_symbol = "MY_HEADER_H"
+	assert output_config.include_guard_symbol == "MY_HEADER_H"
+
+
+def test_C_OutputCodeConfig_stringer_func_name(bogus_output_config_without_unittest):
+	output_config = bogus_output_config_without_unittest
+	assert output_config.stringer_func_name == "header_string"
+	output_config.stringer_func_name = "enum_to_string"
+	assert output_config.stringer_func_name == "enum_to_string"
 
 
 def test_C_CodeCallbacks_outputpath_check_1(bogus_callbacks_without_unittest):

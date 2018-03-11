@@ -17,6 +17,8 @@ class C_OutputCodeConfig(object):
 		self.stringer_path = os.path.abspath(stringer_path)
 		self.unittest_path = os.path.abspath(unittest_path) if unittest_path else None
 		self._include_path = None
+		self._include_guard_symbol = None
+		self._stringer_func_name = None
 
 	@property
 	def include_path(self):
@@ -37,6 +39,30 @@ class C_OutputCodeConfig(object):
 	@include_path.setter
 	def include_path(self, value):
 		self._include_path = value
+
+	@property
+	def include_guard_symbol(self):
+		if self._include_guard_symbol:
+			return self._include_guard_symbol
+		aux = os.path.basename(self.header_path).upper().split(".")
+		n = "_" + "_".join(aux) + "_"
+		return n
+
+	@include_guard_symbol.setter
+	def include_guard_symbol(self, value):
+		self._include_guard_symbol = value
+
+	@property
+	def stringer_func_name(self):
+		if self._stringer_func_name:
+			return self._stringer_func_name
+		aux = os.path.basename(self.header_path).lower().split(".")
+		n = aux[0]+"_string"
+		return n
+
+	@stringer_func_name.setter
+	def stringer_func_name(self, value):
+		self._stringer_func_name = value
 
 	def outputpath_check(self, codefile_abspath):
 		if ((codefile_abspath == self.header_path) or (codefile_abspath == self.stringer_path) or ((self.unittest_path is not None) and
