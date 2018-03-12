@@ -23,10 +23,16 @@ _EXPECT_DISCOVERED_ERRORCODE_H = [
 _EXPECT_HEADER = [
 		"#ifndef _ERRORCODE_H_",
 		"#define _ERRORCODE_H_ 1",
+		"#ifdef __cplusplus",
+		"extern \"C\" {",
+		"#endif",
 		"#define TESTINPUT_DIVIDE_BY_ZERO -1",
 		"#define TESTINPUT_DIVIDEND_NEGATIVE -2",
 		"#define TESTINPUT_DIVISOR_NEGATIVE -3",
 		"char * errorcode_string(int c);",
+		"#ifdef __cplusplus",
+		"}",
+		"#endif",
 		"#endif\t/* _ERRORCODE_H_ */",
 ]
 

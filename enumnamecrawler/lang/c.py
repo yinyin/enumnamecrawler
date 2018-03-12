@@ -149,12 +149,20 @@ class C_CodeCallbacks(object):
 					"#ifndef " + include_guard_symbol + "\n",
 					"#define " + include_guard_symbol + " 1\n",
 					"\n",
+					"#ifdef __cplusplus\n",
+					"extern \"C\" {\n",
+					"#endif\n"
+					"\n",
 			))
 			for enumelem in enumelements:
 				fp.write("#define " + enumelem.name + " " + str(enumelem.value) + "\n")
 			fp.writelines((
 					"\n",
 					"char * " + self.output_config.stringer_func_name + "(int c);\n",
+					"\n",
+					"#ifdef __cplusplus\n",
+					"}\n",
+					"#endif\n",
 					"\n",
 					"#endif\t/* " + include_guard_symbol + " */\n",
 			))
