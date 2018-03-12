@@ -192,7 +192,10 @@ def test_C_CodeCallbacks_run_1(callbacks_without_unittest_ignore_gen):
 			codecallbacks.codemap_write,
 	)
 	basefolder = os.path.abspath(os.path.join(os.path.dirname(__file__), "testinput"))
-	os.unlink(os.path.join(basefolder, "errorcode.h"))
+	try:
+		os.unlink(os.path.join(basefolder, "errorcode.h"))
+	except Exception:
+		pass
 	crawler = CrawlInstance(basefolder, callbacks)
 	crawler.run()
 	assert _EXPECT_HEADER == list(load_generated_file("errorcode.h"))
