@@ -19,6 +19,7 @@ class C_OutputCodeConfig(object):
 		self._include_path = None
 		self._include_guard_symbol = None
 		self._stringer_func_name = None
+		self._testcase_name = None
 
 	def _header_stringer_relpath(self):
 		b = 0
@@ -62,17 +63,32 @@ class C_OutputCodeConfig(object):
 	def include_guard_symbol(self, value):
 		self._include_guard_symbol = value
 
+	def _header_name(self):
+		aux = os.path.basename(self.header_path).lower().split(".")
+		return aux[0]
+
 	@property
 	def stringer_func_name(self):
 		if self._stringer_func_name:
 			return self._stringer_func_name
-		aux = os.path.basename(self.header_path).lower().split(".")
-		n = aux[0] + "_string"
+		n = self._header_name() + "_string"
 		return n
 
 	@stringer_func_name.setter
 	def stringer_func_name(self, value):
 		self._stringer_func_name = value
+
+	@property
+	def testcase_name(self):
+		if self._testcase_name:
+			return self._testcase_name
+		aux = map(lambda x: x.capitalize(), self._header_name().split("_"))
+		n = "".join(aux) + "Test"
+		return n
+
+	@testcase_name.setter
+	def testcase_name(self, value):
+		self._testcase_name = value
 
 	def outputpath_check(self, codefile_abspath):
 		if ((codefile_abspath == self.header_path) or (codefile_abspath == self.stringer_path) or ((self.unittest_path is not None) and
@@ -186,6 +202,27 @@ class C_CodeCallbacks(object):
 					"}\n",
 			))
 
+	def _write_unittest(self, enumelements):
+		with open(self.output_config.unittest_path, "w") as fp:
+			fp.writelines((
+					"#include <gtest/gtest.h>\n",
+					"\n",
+					"#include \"" + self.output_config.include_path + "\"\n",
+					"\n",
+					"namespace {\n",
+					"TEST(" + self.output_config.testcase_name + ", ToString) {\n",
+			))
+			strfuncname = self.output_config.stringer_func_name
+			for enumelem in enumelements:
+				n = enumelem.name
+				fp.write("\tEXPECT_STREQ(\"" + n + "\", " + strfuncname + "(" + n + "));\n")
+			fp.writelines((
+					"}\n",
+					"}\n",
+			))
+
 	def codemap_write(self, enumelements):
 		self._write_header(enumelements)
 		self._write_stringer(enumelements)
+		if self.output_config.unittest_path:
+			self._write_unittest(enumelements)

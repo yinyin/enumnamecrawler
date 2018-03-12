@@ -51,6 +51,18 @@ _EXPECT_STRINGER = [
 		"}",
 ]
 
+_EXPECT_UNITTEST = [
+		"#include <gtest/gtest.h>",
+		"#include \"errorcode.h\"",
+		"namespace {",
+		"TEST(ErrorcodeTest, ToString) {",
+		"EXPECT_STREQ(\"TESTINPUT_DIVIDE_BY_ZERO\", errorcode_string(TESTINPUT_DIVIDE_BY_ZERO));",
+		"EXPECT_STREQ(\"TESTINPUT_DIVIDEND_NEGATIVE\", errorcode_string(TESTINPUT_DIVIDEND_NEGATIVE));",
+		"EXPECT_STREQ(\"TESTINPUT_DIVISOR_NEGATIVE\", errorcode_string(TESTINPUT_DIVISOR_NEGATIVE));",
+		"}",
+		"}",
+]
+
 
 @pytest.fixture
 def bogus_callbacks_with_unittest():
@@ -73,7 +85,7 @@ def get_testoutput_paths():
 	basefolder = os.path.abspath(os.path.join(os.path.dirname(__file__), "testinput"))
 	header_path = os.path.join(basefolder, "errorcode.h")
 	stringer_path = os.path.join(basefolder, "errorcode.c")
-	unittest_path = os.path.join(basefolder, "errorcode_test.c")
+	unittest_path = os.path.join(basefolder, "errorcode_test.cc")
 	return (header_path, stringer_path, unittest_path)
 
 
@@ -82,6 +94,13 @@ def callbacks_with_unittest():
 	header_path, stringer_path, unittest_path = get_testoutput_paths()
 	output_config = C_OutputCodeConfig(header_path, stringer_path, unittest_path)
 	return C_CodeCallbacks("TESTINPUT", output_config)
+
+
+@pytest.fixture
+def callbacks_with_unittest_ignore_gen():
+	header_path, stringer_path, unittest_path = get_testoutput_paths()
+	output_config = C_OutputCodeConfig(header_path, stringer_path, unittest_path)
+	return C_CodeCallbacks("TESTINPUT", output_config, codefile_ignore_patterns=("gen", ))
 
 
 @pytest.fixture
@@ -115,6 +134,13 @@ def test_C_OutputCodeConfig_stringer_func_name(bogus_output_config_without_unitt
 	assert output_config.stringer_func_name == "header_string"
 	output_config.stringer_func_name = "enum_to_string"
 	assert output_config.stringer_func_name == "enum_to_string"
+
+
+def test_C_OutputCodeConfig_testcase_name():
+	output_config = C_OutputCodeConfig("/dev/proj/enum_def.h", "/dev/proj/enum_stringer.c")
+	assert output_config.testcase_name == "EnumDefTest"
+	output_config.testcase_name = "MyEnumTest"
+	assert output_config.testcase_name == "MyEnumTest"
 
 
 def test_C_CodeCallbacks_outputpath_check_1(bogus_callbacks_without_unittest):
@@ -200,3 +226,25 @@ def test_C_CodeCallbacks_run_1(callbacks_without_unittest_ignore_gen):
 	crawler.run()
 	assert _EXPECT_HEADER == list(load_generated_file("errorcode.h"))
 	assert _EXPECT_STRINGER == list(load_generated_file("errorcode.c"))
+
+
+def test_C_CodeCallbacks_run_2(callbacks_with_unittest_ignore_gen):
+	codecallbacks = callbacks_with_unittest_ignore_gen
+	assigner = Incrementer(-1, -1)
+	callbacks = CrawlerCallbacks(
+			codecallbacks.outputpath_check,
+			codecallbacks.codefilepath_filter,
+			codecallbacks.enumelement_discover,
+			assigner,
+			codecallbacks.codemap_write,
+	)
+	basefolder = os.path.abspath(os.path.join(os.path.dirname(__file__), "testinput"))
+	try:
+		os.unlink(os.path.join(basefolder, "errorcode.h"))
+	except Exception:
+		pass
+	crawler = CrawlInstance(basefolder, callbacks)
+	crawler.run()
+	assert _EXPECT_HEADER == list(load_generated_file("errorcode.h"))
+	assert _EXPECT_STRINGER == list(load_generated_file("errorcode.c"))
+	assert _EXPECT_UNITTEST == list(load_generated_file("errorcode_test.cc"))
