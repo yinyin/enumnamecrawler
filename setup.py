@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
 		name="enumnamecrawler",
-		version="0.0.1",
+		version="0.0.1",  # REV-CONSTANT:rev 5d022db7d38f580a850cd995e26a6c2f
 		description="Enum Element Crawler",
 		packages=find_packages(exclude=["*.tests"]),
 		setup_requires=[
