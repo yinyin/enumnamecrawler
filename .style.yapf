@@ -54,11 +54,27 @@ coalesce_brackets=True
 
 # The column limit.
 #column_limit=80
-column_limit=160
+column_limit=120
+
+# The style for continuation alignment. Possible values are:
+#
+# - SPACE: Use spaces for continuation alignment. This is default behavior.
+# - FIXED: Use fixed number (CONTINUATION_INDENT_WIDTH) of columns
+#   (ie: CONTINUATION_INDENT_WIDTH/INDENT_WIDTH tabs) for continuation
+#   alignment.
+# - LESS: Slightly left if cannot vertically align continuation lines with
+#   indent characters.
+# - VALIGN-RIGHT: Vertically align continuation lines with indent
+#   characters. Slightly right (one more indent character) if cannot
+#   vertically align continuation lines with indent characters.
+#
+# For options FIXED, and VALIGN-RIGHT are only available when USE_TABS is
+# enabled.
+continuation_align_style=VALIGN-RIGHT
 
 # Indent width used for line continuations.
 #continuation_indent_width=4
-continuation_indent_width=2
+continuation_indent_width=8
 
 # Put closing brackets on a separate line, dedented, if the bracketed
 # expression can't fit in a single line. Applies to all kinds of brackets,
@@ -105,7 +121,7 @@ indent_dictionary_value=True
 
 # The number of columns to use for indentation.
 #indent_width=2
-indent_width=1
+indent_width=4
 
 # Join short lines into one line. E.g., single line 'if' statements.
 #join_multiple_lines=False
