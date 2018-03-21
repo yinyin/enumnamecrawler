@@ -91,14 +91,20 @@ class C_OutputCodeConfig(object):
 		self._testcase_name = value
 
 	def outputpath_check(self, codefile_abspath):
-		if ((codefile_abspath == self.header_path) or (codefile_abspath == self.stringer_path) or ((self.unittest_path is not None) and
-				(codefile_abspath == self.unittest_path))):
+		if ((codefile_abspath == self.header_path) or (codefile_abspath == self.stringer_path) or
+			((self.unittest_path is not None) and (codefile_abspath == self.unittest_path))):
 			return True
 		return False
 
 
 class C_CodeCallbacks(object):
-	def __init__(self, enumname_prefix, output_config, codefile_ignore_patterns=None, codefile_suffixes=(".c", ".cc", ".cpp", ".h", ".hpp"), *args, **kwds):
+	def __init__(self,
+					enumname_prefix,
+					output_config,
+					codefile_ignore_patterns=None,
+					codefile_suffixes=(".c", ".cc", ".cpp", ".h", ".hpp"),
+					*args,
+					**kwds):
 		# type: (str, C_OutputCodeConfig, Optional[Iterable[str]], Iterable[str])
 		super(C_CodeCallbacks, self).__init__(*args, **kwds)
 		self.enumname_regex = re.compile(r"(" + re.escape(enumname_prefix) + r"_[A-Za-z0-9_]+)")

@@ -23,8 +23,11 @@ _MOCK_FILES = (
 		"f2/c/input.9.txt",
 )
 
-_EXPECT_CODEPATH_CHECKS = len(_MOCK_FILES) - 1 + 5  # all files except f2/c/input.9.txt + folder count (f1, f2, f2/{a, b, c})
-_EXPECT_OUTPUT_CHECKS = 6  # number of *.txt files
+# all files except f2/c/input.9.txt + folder count (f1, f2, f2/{a, b, c})
+_EXPECT_CODEPATH_CHECKS = len(_MOCK_FILES) - 1 + 5
+
+# number of *.txt files
+_EXPECT_OUTPUT_CHECKS = 6
 
 _MOCK_ENUMELEMENTS = {
 		"input.1.txt": (
@@ -107,8 +110,8 @@ def mocked_crawler_callbacks(mocker):
 	enumelement_assign_callable = mocker.stub(name="enumelement_assign_callable")
 	enumelement_assign_callable.side_effect = _enumelement_assign_callable_impl1
 	codemap_write_callable = mocker.stub(name="codemap_write_callable")
-	return CrawlerCallbacks(outputpath_check_callable, codefilepath_filter_callable, enumelement_discover_callable, enumelement_assign_callable,
-																									codemap_write_callable)
+	return CrawlerCallbacks(outputpath_check_callable, codefilepath_filter_callable, enumelement_discover_callable,
+							enumelement_assign_callable, codemap_write_callable)
 
 
 def test_CrawlInstance_relpath(work_folder):

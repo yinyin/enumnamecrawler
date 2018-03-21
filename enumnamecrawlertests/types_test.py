@@ -84,7 +84,8 @@ def test_EnumElement_combine_diffname(enumelem_apple_n, enumelem_banana_1):
 	assert "different name" in str(excinfo.value)
 
 
-def test_EnumElement_compare(enumelem_banana_1, enumelem_banana_na, enumelem_banana_nb, enumelem_banana_3a, enumelem_banana_3b):
+def test_EnumElement_compare(enumelem_banana_1, enumelem_banana_na, enumelem_banana_nb, enumelem_banana_3a,
+								enumelem_banana_3b):
 	assert enumelem_banana_1 != enumelem_banana_na
 	assert not (enumelem_banana_1 == enumelem_banana_na)
 	assert enumelem_banana_na != enumelem_banana_1
